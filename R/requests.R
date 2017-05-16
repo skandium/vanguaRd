@@ -11,6 +11,8 @@
 #' @examples
 #' client = Client(url="https://localhost:5080", id)
 
+library(httr)
+library(rjson)
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
@@ -24,8 +26,8 @@ url <- paste0(self_url,"/api/v1/runs/", self_id)
 
 Client <- function(url="https://localhost:5080", id){
   # Dependencies
-  library(httr)
-  library(rjson)
+  #library(httr)
+  #library(rjson)
   
   instance <- setClass(
     # Set the name for the class
