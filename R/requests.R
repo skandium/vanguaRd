@@ -25,7 +25,7 @@ dotenv_mockup <- list( # TODO read those from a file!
   FGMACHINE_NAME="TaivoMacbook"
 )
 
-get_filename <- function() {
+.get_filename <- function() {
   # https://stackoverflow.com/questions/1815606/rscript-determine-path-of-the-executing-script
   initial.options <- commandArgs(trailingOnly = FALSE)
   file.arg.name <- "--file="
@@ -33,9 +33,53 @@ get_filename <- function() {
   return(script.name[1])
 }
 
-create_experiment <- function() {
-  url <- paste0(vanguard_settings$fglab_url,"/api/v1/experiments/create")
+.get_options_dict <- function() {
+  experiment <- list()
 
+  for(option_name in names(vanguard_settings$parameters)) {
+
+    option <- list(
+      type="",
+      default=NA
+    )
+
+    # TODO currently not supporting lists
+    option_value <- vanguard_settings$parameters[[option_name]]
+    if(is.numeric(option_value)) {
+      option[["type"]] <- "float"
+      option[["default"]] <- option_value
+    } else if(is.logical(option_value)) {
+      option[["type"]] <- "bool"
+      option[["default"]] <- option_value
+    } else if(is.character(option_value)) {
+      option[["type"]] <- "string"
+      option[["default"]] <- option_value
+    } else {
+      option[["type"]] <- "string"
+      warning("Unsupported default option value, forcing to string.")
+      option[["default"]] <- as.character(option_value)
+    }
+
+    experiment[[option_name]] <- option
+  }
+
+  return(experiment)
+}
+
+.create_experiment <- function() {
+  url <- paste0(vanguard_settings$fglab_url,"/api/v1/experiments/create")
+  fgmachine_dir <- dotenv_mockup[["FGMACHINE_DIR"]]
+  experiments_json_loc <- paste0(fgmachine_dir, "/experiments.json")
+
+  if(file.exists(experiments_json_loc)) {
+    json_data <- list(project_name=vanguard_settings$project_name,
+                      project_descriotion=vanguard_settings$project_description,
+                      experiment_name=vanguard_settings$experiment_name,
+                      options=NA,# TODO
+                      tags=vanguard_settings$tags
+    )
+    response <- POST(url=url, body=toJSON(json_data), encode="json")
+  }
 }
 
 # ---- Set up connection with FGLab ----
@@ -81,17 +125,17 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
   )
 
   if(args[["prerun"]]) {
-    json_list <- list(project_name=project_name,
+    json_data <- list(project_name=project_name,
                       project_description=project_description,
                       experiment_name=experiment_name,
                       options=NA, # TODO options
                       experiment_setup=experiment_setup,
                       tags=tags)
-    print(toJSON(json_list))
+    print(toJSON(json_data))
     stop()
   } else if(is.na(settings$run_id) & !settings$run_locally) {
     print("Creating new experiment")
-    create_experiment()
+    .create_experiment()
     stop()
   }
 }
