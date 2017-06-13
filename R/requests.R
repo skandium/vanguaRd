@@ -25,6 +25,12 @@ dotenv_mockup <- list( # TODO read those from a file!
   FGMACHINE_NAME="TaivoMacbook"
 )
 
+.stopQuietly <- function(...) {
+  #https://stackoverflow.com/questions/14469522/stop-an-r-program-without-error
+  blankMsg <- sprintf("\r%s\r", paste(rep(" ", getOption("width")-1L), collapse=" "));
+  stop(simpleError(blankMsg));
+}
+
 .get_filename <- function() {
   # https://stackoverflow.com/questions/1815606/rscript-determine-path-of-the-executing-script
   initial.options <- commandArgs(trailingOnly = FALSE)
@@ -72,11 +78,11 @@ dotenv_mockup <- list( # TODO read those from a file!
   experiments_json_loc <- paste0(fgmachine_dir, "/experiments.json")
 
   if(file.exists(experiments_json_loc)) {
-    json_data <- list(project_name=vanguard_settings$project_name,
-                      project_descriotion=vanguard_settings$project_description,
-                      experiment_name=vanguard_settings$experiment_name,
-                      options=NA,# TODO
-                      tags=vanguard_settings$tags
+    json_data <- list(project_name=vanguard_settings[["project_name"]],
+                      project_description=vanguard_settings[["project_description"]],
+                      experiment_name=vanguard_settings[["experiment_name"]],
+                      options=.get_options_dict(),
+                      tags=vanguard_settings[["tags"]]
     )
     response <- POST(url=url, body=toJSON(json_data), encode="json")
   }
@@ -124,19 +130,19 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
     results=wd
   )
 
-  if(args[["prerun"]]) {
-    json_data <- list(project_name=project_name,
-                      project_description=project_description,
-                      experiment_name=experiment_name,
-                      options=NA, # TODO options
-                      experiment_setup=experiment_setup,
-                      tags=tags)
-    print(toJSON(json_data))
-    stop()
-  } else if(is.na(settings$run_id) & !settings$run_locally) {
+  if(!is.na(args[["prerun"]]) && args[["prerun"]]) {
+    json_data <- list(project_name=settings$project_name,
+                      project_description=settings$project_description,
+                      experiment_name=settings$experiment_name,
+                      options=.get_options_dict(),
+                      experiment_setup=settings$experiment_setup,
+                      tags=settings$tags)
+    cat(toJSON(json_data))
+    .stopQuietly()
+  } else if(is.na(settings$run_id) && !settings$run_locally) {
     print("Creating new experiment")
     .create_experiment()
-    stop()
+    .stopQuietly("Created experiment")
   }
 }
 
