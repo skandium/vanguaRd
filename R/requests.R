@@ -13,35 +13,89 @@
 
 library(httr)
 library(rjson)
+library(argparser)
+library(rjson)
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
+vanguard_settings <- list()
 
-#Temp
-self_url <- "http://localhost:5080"
-self_id <- "59367163a49d808508dc9525"
-url <- paste0(self_url,"/api/v1/runs/", self_id)
+dotenv_mockup <- list( # TODO read those from a file!
+  FGMACHINE_DIR="/Users/taivo/proekspert/FGMachine",
+  FGMACHINE_NAME="TaivoMacbook"
+)
 
+get_filename <- function() {
+  # https://stackoverflow.com/questions/1815606/rscript-determine-path-of-the-executing-script
+  initial.options <- commandArgs(trailingOnly = FALSE)
+  file.arg.name <- "--file="
+  script.name <- sub(file.arg.name, "", initial.options[grep(file.arg.name, initial.options)])
+  return(script.name[1])
+}
 
+create_experiment <- function() {
+  url <- paste0(vanguard_settings$fglab_url,"/api/v1/experiments/create")
 
-Client <- function(url="http://localhost:5080", id){
-  # Dependencies
-  #library(httr)
-  #library(rjson)
+}
 
-  instance <- setClass(
-    # Set the name for the class
-    "instance",
-    # Define the slots
-    slots = c(
-      url = "character",
-      id   = "character"
-    )
+# ---- Set up connection with FGLab ----
+vanguard_init <- function(url, project_name, experiment_name, parameters,
+                          filepath, tags=c(), run_locally=FALSE,
+                 project_description="-- Project description (legacy) --") {
+  settings <- list()
+  settings$fglab_url <- url
+  settings$project_name <- project_name
+  settings$experiment_name <- experiment_name
+  settings$parameters <- parameters
+  settings$tags <- tags
+  settings$run_locally <- run_locally
+  settings$project_description <- project_description
+
+  parser <- arg_parser(description="vanguard")
+  parser <- add_argument(parser, "--_id", help="id", type="character")
+  parser <- add_argument(parser, "--prerun", help="prerun", type="character")
+  for(key in names(parameters)) {
+    value <- parameters[[key]]
+    parser <- add_argument(parser, paste0("--", key), help=key,
+                           type=typeof(value))
+  }
+
+  args <- parse_args(parser)
+  settings$args <- args
+  settings$run_id <- args[["_id"]]
+
+  if(is.na(filepath)) {
+    stop("File path not specified! Fill out the 'filepath' parameter in vanguard_init().")
+  }
+  wd <- getwd()
+
+  vanguard_settings <<- settings
+
+  experiment_setup <<- list(
+    cwd=wd,
+    command="Rscript",
+    args=c(filepath),
+    options="double-dash",
+    capacity=1,
+    results=wd
   )
 
-  init_client <- new("instance", url=url, id=id)
-  return(init_client)
+  if(args[["prerun"]]) {
+    json_list <- list(project_name=project_name,
+                      project_description=project_description,
+                      experiment_name=experiment_name,
+                      options=NA, # TODO options
+                      experiment_setup=experiment_setup,
+                      tags=tags)
+    print(toJSON(json_list))
+    stop()
+  } else if(is.na(settings$run_id) & !settings$run_locally) {
+    print("Creating new experiment")
+    create_experiment()
+    stop()
+  }
 }
+
 
 #' Sending files
 #'
