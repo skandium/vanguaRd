@@ -84,7 +84,9 @@ dotenv_mockup <- list( # TODO read those from a file!
                       options=.get_options_dict(),
                       tags=vanguard_settings[["tags"]]
     )
-    response <- POST(url=url, body=toJSON(json_data), encode="json")
+    response <- POST(url=url, body=json_data, encode="json", verbose())
+  } else {
+    stop("Could not find FGMachine folder. Please check whether you have entered it correctly in .env file")
   }
 }
 
