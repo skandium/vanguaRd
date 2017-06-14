@@ -19,6 +19,7 @@ library(rjson)
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
 vanguard_settings <- list()
+experiment_setup <- list()
 
 dotenv_mockup <- list( # TODO read those from a file!
   FGMACHINE_DIR="/Users/taivo/proekspert/FGMachine",
@@ -85,6 +86,18 @@ dotenv_mockup <- list( # TODO read those from a file!
                       tags=vanguard_settings[["tags"]]
     )
     response <- POST(url=url, body=json_data, encode="json", verbose())
+    experiment_id <- content(response)[["insertedIds"]][[1]]
+
+    if(!file.exists(experiments_json_loc)) {
+      ls <- list()
+      ls[[experiment_id]] <- experiment_setup
+      write(toJSON(ls), file=experiments_json_loc)
+    } else {
+      content <- readChar(experiments_json_loc, file.info(experiments_json_loc)$size)
+      experiments <- fromJSON(content)
+      experiments[[experiment_id]] <- experiment_setup
+      write(toJSON(experiments), file=experiments_json_loc)
+    }
   } else {
     stop("Could not find FGMachine folder. Please check whether you have entered it correctly in .env file")
   }
@@ -154,11 +167,11 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
 #' Sends an arbitrary file over PUT request to FGLab
 #' @param file The filepath
 
-send_file <- function(file, session=client){
+send_file <- function(file){
   mylist <- list()
   myfile <- upload_file(file)
   mylist[['file']] <- myfile
-  url <- paste0(session@url,"/api/v1/runs/", session@id, "/file")
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/file")
   PUT(url, body=mylist)
 }
 
@@ -168,7 +181,7 @@ send_file <- function(file, session=client){
 #' @param string The content of the file to be sent
 #' @param filename The filename shown on FGLab, including extension
 
-.send_file_as_string <- function(string, filename, session=client){
+.send_file_as_string <- function(string, filename){
   # Save string to file in a temporary directory
   tdir <- tempdir()
   file_path <- paste0(tdir, "/", filename)
@@ -177,7 +190,7 @@ send_file <- function(file, session=client){
   # Upload file
   myfile <- upload_file(file_path)
   mylist[['file']] <- myfile
-  url <- paste0(session@url,"/api/v1/runs/", session@id, "/file")
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/file")
   PUT(url, body=mylist)
 }
 
@@ -188,11 +201,11 @@ send_file <- function(file, session=client){
 #' @param metric The metric name
 #' @value value The metric value
 
-send_metric <- function(metric,value, session=client){
+send_metric <- function(metric, value){
   mylist <- list()
   mylist[[metric]] <- value
   json <- list("_scores" = mylist)
-  url <- paste0(session@url,"/api/v1/runs/", session@id)
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
   PUT(url,body=json,encode="json",verbose())
 }
 
@@ -200,10 +213,10 @@ send_metric <- function(metric,value, session=client){
 #'
 #' Sends an arbitrary value over PUT request to FGLab. Works similarly to send_metric but the results are displayed differently
 
-send_value <- function(name, value, session=client){
+send_value <- function(name, value){
   mylist <- list()
   mylist[[name]] <- value
-  url <- paste0(session@url,"/api/v1/runs/", session@id)
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
   PUT(url,body=mylist,encode="json",verbose())
 }
 
@@ -212,9 +225,9 @@ send_value <- function(name, value, session=client){
 #' Sends arbitrary note over PUT request to FGLab.
 #' @param value The string content
 
-send_note <- function(value, session=client){
+send_note <- function(value){
   json <- list("_notes" = value)
-  url <- paste0(session@url,"/api/v1/runs/", session@id)
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
   PUT(url,body=json,encode="json",verbose())
 }
 
@@ -223,11 +236,11 @@ send_note <- function(value, session=client){
 #' Sends arbitrary log over PUT request to FGLab.
 #' @param value The string content
 
-send_log <- function(msg,type="stdout", session=client){
+send_log <- function(msg,type="stdout"){
   mylist <- list()
   mylist[["type"]] <- type
   mylist[["msg"]] <- msg
-  url <- paste0(session@url,"/api/v1/runs/", session@id, "/logs")
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/logs")
   PUT(url,body=mylist,encode="json",verbose())
 }
 
@@ -236,7 +249,7 @@ send_log <- function(msg,type="stdout", session=client){
 #' Sends LIME explanation to FGLab
 #' @param value The string content TODO
 
-send_explanation <- function(explanation, filename="explanation.png", session=client){
+send_explanation <- function(explanation, filename="explanation.png"){
   library(ggplot2)
   g <- plot_features(explanation) # get ggplot object
 
@@ -255,7 +268,7 @@ send_explanation <- function(explanation, filename="explanation.png", session=cl
 #' Send an arbitrary number of time series graphs to be displayed in FGLab
 
 
-send_chart <- function(var_names, values, session=client ){
+send_chart <- function(var_names, values){
   top <- list(columnNames=as.list(var_names))
   mylist <- list()
   mylist[[var_names[1]]] <- "x1"
@@ -264,7 +277,7 @@ send_chart <- function(var_names, values, session=client ){
   mid <- list(data=list(xs=mylist,columns=values))
   bottom <- list(axis=c(list(x=list(label=list(text="Iterations"))) , list(y=list(label=list(text="Losses")))))
   charts <- list("_charts"=c(top,mid,bottom))
-  url <- paste0(session@url,"/api/v1/runs/", session@id)
+  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
   PUT(url,body=charts,encode="json")
 }
 
