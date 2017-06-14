@@ -2,19 +2,11 @@
 # Client library in R
 #####################
 
-#' Initializing the SMART Client
-#'
-#' This function creates an object that contains the URL of FGLab and ID of your experiment
-#' @param url The URL of FGLab. Defaults to Localhost:5080
-#' @param id Experiment ID from FGLab. This is provided from the command line
-#' @keywords initialization
-#' @examples
-#' client = Client(url="https://localhost:5080", id)
-
-library(httr)
-library(rjson)
-library(argparser)
-library(rjson)
+options(warn=-1) # Turn off warnings while loading libraries
+suppressMessages(library(httr))
+suppressMessages(library(rjson))
+suppressMessages(library(argparser))
+options(warn=0)
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
@@ -118,7 +110,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
 
   parser <- arg_parser(description="vanguard")
   parser <- add_argument(parser, "--_id", help="id", type="character")
-  parser <- add_argument(parser, "--prerun", help="prerun", type="character")
+  parser <- add_argument(parser, "--prerun", help="prerun", type="character", nargs=1)
   for(key in names(parameters)) {
     value <- parameters[[key]]
     parser <- add_argument(parser, paste0("--", key), help=key,
@@ -139,13 +131,13 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
   experiment_setup <<- list(
     cwd=wd,
     command="Rscript",
-    args=c(filepath),
+    args=c(paste0(wd, "/", filepath)),
     options="double-dash",
     capacity=1,
     results=wd
   )
 
-  if(!is.na(args[["prerun"]]) && args[["prerun"]]) {
+  if(!is.na(args[["prerun"]]) && args[["prerun"]] == "True") {
     json_data <- list(project_name=settings$project_name,
                       project_description=settings$project_description,
                       experiment_name=settings$experiment_name,
