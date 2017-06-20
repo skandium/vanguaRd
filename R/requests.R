@@ -82,11 +82,15 @@ dotenv_mockup <- list( # TODO read those from a file!
 
     if(!file.exists(experiments_json_loc)) {
       ls <- list()
+      print("EXPERIMENT SETUP 1")
+      print(experiment_setup)
       ls[[experiment_id]] <- experiment_setup
       write(toJSON(ls), file=experiments_json_loc)
     } else {
       content <- readChar(experiments_json_loc, file.info(experiments_json_loc)$size)
       experiments <- fromJSON(content)
+      print("EXPERIMENT SETUP 2")
+      print(experiment_setup)
       experiments[[experiment_id]] <- experiment_setup
       write(toJSON(experiments), file=experiments_json_loc)
     }
