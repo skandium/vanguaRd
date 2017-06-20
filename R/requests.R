@@ -15,7 +15,8 @@ experiment_setup <- list()
 
 dotenv_mockup <- list( # TODO read those from a file!
   FGMACHINE_DIR="/Users/taivo/proekspert/FGMachine",
-  FGMACHINE_NAME="TaivoMacbook"
+  FGMACHINE_NAME="TaivoMacbook",
+  FGMACHINE_URL="http://localhost:5081"
 )
 
 .stopQuietly <- function(...) {
@@ -75,25 +76,14 @@ dotenv_mockup <- list( # TODO read those from a file!
                       project_description=vanguard_settings[["project_description"]],
                       experiment_name=vanguard_settings[["experiment_name"]],
                       options=.get_options_dict(),
-                      tags=vanguard_settings[["tags"]]
+                      tags=vanguard_settings[["tags"]],
+                      experiment_setup=experiment_setup,
+                      fgmachine_url=dotenv_mockup[["FGMACHINE_URL"]]
     )
     response <- POST(url=url, body=json_data, encode="json", verbose())
     experiment_id <- content(response)[["insertedIds"]][[1]]
 
-    if(!file.exists(experiments_json_loc)) {
-      ls <- list()
-      print("EXPERIMENT SETUP 1")
-      print(experiment_setup)
-      ls[[experiment_id]] <- experiment_setup
-      write(toJSON(ls), file=experiments_json_loc)
-    } else {
-      content <- readChar(experiments_json_loc, file.info(experiments_json_loc)$size)
-      experiments <- fromJSON(content)
-      print("EXPERIMENT SETUP 2")
-      print(experiment_setup)
-      experiments[[experiment_id]] <- experiment_setup
-      write(toJSON(experiments), file=experiments_json_loc)
-    }
+
   } else {
     stop("Could not find FGMachine folder. Please check whether you have entered it correctly in .env file")
   }
