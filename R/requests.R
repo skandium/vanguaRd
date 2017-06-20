@@ -3,10 +3,10 @@
 #####################
 
 options(warn=-1) # Turn off warnings while loading libraries
-suppressMessages(library(httr))
-suppressMessages(library(rjson))
-suppressMessages(library(argparser))
-suppressMessages(library(dotenv))
+suppressMessages(require(httr))
+suppressMessages(require(rjson))
+suppressMessages(require(argparser))
+suppressMessages(require(dotenv))
 options(warn=0)
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
