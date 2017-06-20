@@ -6,18 +6,13 @@ options(warn=-1) # Turn off warnings while loading libraries
 suppressMessages(library(httr))
 suppressMessages(library(rjson))
 suppressMessages(library(argparser))
+suppressMessages(library(dotenv))
 options(warn=0)
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
 vanguard_settings <- list()
 experiment_setup <- list()
-
-dotenv_mockup <- list( # TODO read those from a file!
-  FGMACHINE_DIR="/Users/taivo/proekspert/FGMachine",
-  FGMACHINE_NAME="TaivoMacbook",
-  FGMACHINE_URL="http://localhost:5081"
-)
 
 .stopQuietly <- function(...) {
   #https://stackoverflow.com/questions/14469522/stop-an-r-program-without-error
@@ -68,7 +63,7 @@ dotenv_mockup <- list( # TODO read those from a file!
 
 .create_experiment <- function() {
   url <- paste0(vanguard_settings$fglab_url,"/api/v1/experiments/create")
-  fgmachine_dir <- dotenv_mockup[["FGMACHINE_DIR"]]
+  fgmachine_dir <- Sys.getenv("FGMACHINE_DIR")
   experiments_json_loc <- paste0(fgmachine_dir, "/experiments.json")
 
   if(file.exists(experiments_json_loc)) {
@@ -78,7 +73,7 @@ dotenv_mockup <- list( # TODO read those from a file!
                       options=.get_options_dict(),
                       tags=vanguard_settings[["tags"]],
                       experiment_setup=experiment_setup,
-                      fgmachine_url=dotenv_mockup[["FGMACHINE_URL"]]
+                      fgmachine_url=Sys.getenv("FGMACHINE_URL")
     )
     response <- POST(url=url, body=json_data, encode="json", verbose())
     experiment_id <- content(response)[["insertedIds"]][[1]]
