@@ -1,3 +1,10 @@
+Prerequisite libraries:
+* httr
+* rjson
+* argparser
+* dotenv
+
+
 Usage:
 
 ```bash
