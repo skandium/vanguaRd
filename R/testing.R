@@ -3,7 +3,7 @@
   parameters <- list(param1=123,
                      astring="12312")
 
-  vanguard_init("http://localhost:5080", "Taivo R dev project 1", "test experiment 2",
+  vanguard_init("http://localhost:5080", "Taivo R dev project 1", "test experiment 3",
                 parameters, "R/testing.R", tags=c("tag1", "tag2"))
 
   #sink(stdout(), type = "message")
@@ -14,5 +14,3 @@
   send_metric("astring", vanguard_settings$args$astring)
   cat("taivo leeet lõpp")
   #print(toJSON(.get_options_dict()))
-
-  stop("THIS IS AN ERROR")

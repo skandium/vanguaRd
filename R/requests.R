@@ -75,7 +75,7 @@ experiment_setup <- list()
                       experiment_setup=experiment_setup,
                       fgmachine_url=Sys.getenv("FGMACHINE_URL")
     )
-    response <- POST(url=url, body=json_data, encode="json", verbose())
+    response <- POST(url=url, body=json_data, encode="json")
     experiment_id <- content(response)[["insertedIds"]][[1]]
 
 
@@ -187,7 +187,7 @@ send_metric <- function(metric, value){
   mylist[[metric]] <- value
   json <- list("_scores" = mylist)
   url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
-  PUT(url,body=json,encode="json",verbose())
+  PUT(url,body=json,encode="json")
 }
 
 #' Sending values
@@ -198,7 +198,7 @@ send_value <- function(name, value){
   mylist <- list()
   mylist[[name]] <- value
   url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
-  PUT(url,body=mylist,encode="json",verbose())
+  PUT(url,body=mylist,encode="json")
 }
 
 #' Sending notes
@@ -209,7 +209,7 @@ send_value <- function(name, value){
 send_note <- function(value){
   json <- list("_notes" = value)
   url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
-  PUT(url,body=json,encode="json",verbose())
+  PUT(url,body=json,encode="json")
 }
 
 #' Sending logs
@@ -222,7 +222,7 @@ send_log <- function(msg,type="stdout"){
   mylist[["type"]] <- type
   mylist[["msg"]] <- msg
   url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/logs")
-  PUT(url,body=mylist,encode="json",verbose())
+  PUT(url,body=mylist,encode="json")
 }
 
 #' Sending explanations
