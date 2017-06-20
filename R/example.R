@@ -3,7 +3,7 @@
   parameters <- list(param1=123,
                      astring="12312")
 
-  vanguard_init("http://localhost:5080", "Taivo R dev project 1", "test experiment 3",
+  vanguard_init("http://localhost:5080", "Example project in R", "Example experiment in R",
                 parameters, "R/example.R", tags=c("tag1", "tag2"))
 
   print("this is a test message")
