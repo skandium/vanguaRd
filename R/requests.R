@@ -121,7 +121,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
     cwd=wd,
     command="Rscript",
     args=list(paste0(wd, "/", filepath)),
-    options="double-dash-space",
+    options="double-dash-plain",
     capacity=1,
     results=wd
   )
