@@ -131,7 +131,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
                       project_description=settings$project_description,
                       experiment_name=settings$experiment_name,
                       options=.get_options_dict(),
-                      experiment_setup=settings$experiment_setup,
+                      experiment_setup=experiment_setup,
                       tags=settings$tags)
     cat(toJSON(json_data))
     .stopQuietly()
