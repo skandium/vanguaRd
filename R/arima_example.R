@@ -11,7 +11,7 @@ parameters <- list(p=3,
                    note="Explaining Apple stock price via simple ARIMA model")
 
 vanguard_init("http://localhost:5080", "Series", "R ARIMA",
-              parameters, "R/arima.R", tags=c("Time series", "ARIMA", "Stocks"))
+              parameters, "R/arima_example.R", tags=c("Time series", "ARIMA", "Stocks"))
 
 
 if (!require("quantmod")) {
