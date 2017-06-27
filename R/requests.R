@@ -146,7 +146,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
                       experiment_setup=pkg_env$experiment_setup,
                       tags=settings$tags)
     cat(rjson::toJSON(json_data))
-    .stopQuietly()
+    quit(save="no", status=0) # .stopQuietly
   } else if(is.na(settings$run_id) && !settings$run_locally) {
     print("Creating new experiment")
     .create_experiment()
