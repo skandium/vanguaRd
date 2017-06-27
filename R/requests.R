@@ -65,7 +65,6 @@ unlockBinding("experiment_setup", pkg_env)
 .create_experiment <- function() {
   url <- paste0(pkg_env$vanguard_settings$fglab_url,"/api/v1/experiments/create")
   fgmachine_dir <- Sys.getenv("FGMACHINE_DIR")
-  print(fgmachine_dir)
   experiments_json_loc <- paste0(fgmachine_dir, "/experiments.json")
 
   if(file.exists(experiments_json_loc)) {
@@ -155,6 +154,16 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
   }
 }
 
+#' Get an argument value
+#'
+#' Returns the value of an argument for the given run
+#' @param name Name of the argument
+#'
+#' @export
+get_argument <- function(name) {
+  return(pkg_env$vanguard_settings$args[[name]])
+}
+
 
 #' Sending files
 #'
@@ -176,8 +185,6 @@ send_file <- function(file){
 #' Sends an arbitrary string over PUT request to FGLab into a file
 #' @param string The content of the file to be sent
 #' @param filename The filename shown on FGLab, including extension
-#'
-#' @export
 
 .send_file_as_string <- function(string, filename){
   # Save string to file in a temporary directory
