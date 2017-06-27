@@ -4,7 +4,7 @@
 \alias{send_log}
 \title{Sending logs}
 \usage{
-send_log(msg, type = "stdout", session = client)
+send_log(msg, type = "stdout")
 }
 \arguments{
 \item{value}{The string content}

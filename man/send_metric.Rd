@@ -4,7 +4,7 @@
 \alias{send_metric}
 \title{Sending metrics}
 \usage{
-send_metric(metric, value, session = client)
+send_metric(metric, value)
 }
 \arguments{
 \item{metric}{The metric name}

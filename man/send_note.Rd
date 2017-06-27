@@ -4,7 +4,7 @@
 \alias{send_note}
 \title{Sending notes}
 \usage{
-send_note(value, session = client)
+send_note(value)
 }
 \arguments{
 \item{value}{The string content}

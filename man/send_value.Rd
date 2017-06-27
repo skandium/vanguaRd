@@ -4,7 +4,7 @@
 \alias{send_value}
 \title{Sending values}
 \usage{
-send_value(name, value, session = client)
+send_value(name, value)
 }
 \description{
 Sends an arbitrary value over PUT request to FGLab. Works similarly to send_metric but the results are displayed differently
