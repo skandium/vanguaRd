@@ -177,7 +177,7 @@ send_file <- function(file){
   myfile <- httr::upload_file(file)
   mylist[['file']] <- myfile
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
-  httr::PUT(url, body=mylist)
+  invisible(httr::PUT(url, body=mylist))
 }
 
 #' Sending files as strings
@@ -196,7 +196,7 @@ send_file <- function(file){
   myfile <- httr::upload_file(file_path)
   mylist[['file']] <- myfile
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
-  httr::PUT(url, body=mylist)
+  invisible(httr::PUT(url, body=mylist))
 }
 
 
@@ -213,7 +213,7 @@ send_metric <- function(metric, value){
   mylist[[metric]] <- value
   json <- list("_scores" = mylist)
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  httr::PUT(url,body=json,encode="json")
+  invisible(httr::PUT(url,body=json,encode="json"))
 }
 
 #' Sending values
@@ -228,7 +228,7 @@ send_value <- function(name, value){
   mylist <- list()
   mylist[[name]] <- value
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  httr::PUT(url,body=mylist,encode="json")
+  invisible(httr::PUT(url,body=mylist,encode="json"))
 }
 
 #' Sending notes
@@ -241,7 +241,7 @@ send_value <- function(name, value){
 send_note <- function(value){
   json <- list("_notes" = value)
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  httr::PUT(url,body=json,encode="json")
+  invisible(httr::PUT(url,body=json,encode="json"))
 }
 
 #' Sending logs
@@ -257,7 +257,7 @@ send_log <- function(msg, type="stdout"){
   mylist[["type"]] <- type
   mylist[["msg"]] <- msg
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/logs")
-  httr::PUT(url,body=mylist,encode="json")
+  invisible(httr::PUT(url,body=mylist,encode="json"))
 }
 
 #' Sending explanations
@@ -275,7 +275,7 @@ send_explanation <- function(explanation, filename="explanation.png"){
   tdir <- tempdir()
   file_path <- paste0(tdir, "/", filename)
   ggplot2::ggsave(file_path, g)
-  send_file(file_path)
+  invisible(send_file(file_path))
 }
 
 
@@ -299,6 +299,6 @@ send_chart <- function(var_names, values){
   bottom <- list(axis=c(list(x=list(label=list(text="Iterations"))) , list(y=list(label=list(text="Losses")))))
   charts <- list("_charts"=c(top,mid,bottom))
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  httr::PUT(url,body=charts,encode="json")
+  invisible(httr::PUT(url,body=charts,encode="json"))
 }
 
