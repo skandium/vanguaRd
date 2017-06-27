@@ -9,7 +9,7 @@ parameters <- list(param1=123,
                    astring3="default")
 
 vanguard_init("http://localhost:5080", "Example project in R", "Example experiment x in R",
-              parameters, "demo/example.R", tags=c("tag1", "tag2"), run_locally=TRUE)
+              parameters, "demo/example.R", tags=c("tag1", "tag2"))
 
 print("this is a test message")
 print(paste0("param1 ", get_argument("param1")))

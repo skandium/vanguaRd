@@ -174,7 +174,7 @@ get_argument <- function(name) {
 
 send_file <- function(file){
   mylist <- list()
-  myfile <- upload_file(file)
+  myfile <- httr::upload_file(file)
   mylist[['file']] <- myfile
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
   httr::PUT(url, body=mylist)
@@ -193,7 +193,7 @@ send_file <- function(file){
   write(string, file=file_path)
 
   # Upload file
-  myfile <- upload_file(file_path)
+  myfile <- httr::upload_file(file_path)
   mylist[['file']] <- myfile
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
   httr::PUT(url, body=mylist)
