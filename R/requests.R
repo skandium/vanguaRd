@@ -14,8 +14,13 @@ readRenviron("./.env")
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
-vanguard_settings <- list()
-experiment_setup <- list()
+pkg_env <- new.env()
+
+pkg_env$vanguard_settings <- list()
+pkg_env$experiment_setup <- list()
+
+unlockBinding("vanguard_settings", pkg_env)
+unlockBinding("experiment_setup", pkg_env)
 
 .stopQuietly <- function(...) {
   #https://stackoverflow.com/questions/14469522/stop-an-r-program-without-error
@@ -34,7 +39,7 @@ experiment_setup <- list()
 .get_options_dict <- function() {
   experiment <- list()
 
-  for(option_name in names(vanguard_settings$parameters)) {
+  for(option_name in names(pkg_env$vanguard_settings$parameters)) {
 
     option <- list(
       type="",
@@ -42,7 +47,7 @@ experiment_setup <- list()
     )
 
     # TODO currently not supporting lists
-    option_value <- vanguard_settings$parameters[[option_name]]
+    option_value <- pkg_env$vanguard_settings$parameters[[option_name]]
     if(is.numeric(option_value)) {
       option[["type"]] <- "float"
       option[["default"]] <- option_value
@@ -65,18 +70,18 @@ experiment_setup <- list()
 }
 
 .create_experiment <- function() {
-  url <- paste0(vanguard_settings$fglab_url,"/api/v1/experiments/create")
+  url <- paste0(pkg_env$vanguard_settings$fglab_url,"/api/v1/experiments/create")
   fgmachine_dir <- Sys.getenv("FGMACHINE_DIR")
   print(fgmachine_dir)
   experiments_json_loc <- paste0(fgmachine_dir, "/experiments.json")
 
   if(file.exists(experiments_json_loc)) {
-    json_data <- list(project_name=vanguard_settings[["project_name"]],
-                      project_description=vanguard_settings[["project_description"]],
-                      experiment_name=vanguard_settings[["experiment_name"]],
+    json_data <- list(project_name=pkg_env$vanguard_settings[["project_name"]],
+                      project_description=pkg_env$vanguard_settings[["project_description"]],
+                      experiment_name=pkg_env$vanguard_settings[["experiment_name"]],
                       options=.get_options_dict(),
-                      tags=vanguard_settings[["tags"]],
-                      experiment_setup=experiment_setup,
+                      tags=pkg_env$vanguard_settings[["tags"]],
+                      experiment_setup=pkg_env$experiment_setup,
                       fgmachine_url=Sys.getenv("FGMACHINE_URL")
     )
     response <- POST(url=url, body=json_data, encode="json")
@@ -110,7 +115,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
   settings$parameters <- parameters
   settings$tags <- tags
   settings$run_locally <- run_locally
-  settings$project_description <- project_description
+  settings$project_description <- ""
 
   parser <- arg_parser(description="vanguard")
   parser <- add_argument(parser, "--_id", help="id", type="character")
@@ -130,9 +135,9 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
   }
   wd <- getwd()
 
-  vanguard_settings <<- settings
+  pkg_env$vanguard_settings <- settings
 
-  experiment_setup <<- list(
+  pkg_env$experiment_setup <- list(
     cwd=wd,
     command="Rscript",
     args=list(paste0(wd, "/", filepath)),
@@ -146,7 +151,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
                       project_description=settings$project_description,
                       experiment_name=settings$experiment_name,
                       options=.get_options_dict(),
-                      experiment_setup=experiment_setup,
+                      experiment_setup=pkg_env$experiment_setup,
                       tags=settings$tags)
     cat(toJSON(json_data))
     .stopQuietly()
@@ -169,7 +174,7 @@ send_file <- function(file){
   mylist <- list()
   myfile <- upload_file(file)
   mylist[['file']] <- myfile
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/file")
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
   PUT(url, body=mylist)
 }
 
@@ -190,7 +195,7 @@ send_file <- function(file){
   # Upload file
   myfile <- upload_file(file_path)
   mylist[['file']] <- myfile
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/file")
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
   PUT(url, body=mylist)
 }
 
@@ -207,7 +212,7 @@ send_metric <- function(metric, value){
   mylist <- list()
   mylist[[metric]] <- value
   json <- list("_scores" = mylist)
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
   PUT(url,body=json,encode="json")
 }
 
@@ -222,7 +227,7 @@ send_metric <- function(metric, value){
 send_value <- function(name, value){
   mylist <- list()
   mylist[[name]] <- value
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
   PUT(url,body=mylist,encode="json")
 }
 
@@ -235,7 +240,7 @@ send_value <- function(name, value){
 
 send_note <- function(value){
   json <- list("_notes" = value)
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
   PUT(url,body=json,encode="json")
 }
 
@@ -251,7 +256,7 @@ send_log <- function(msg, type="stdout"){
   mylist <- list()
   mylist[["type"]] <- type
   mylist[["msg"]] <- msg
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]], "/logs")
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/logs")
   PUT(url,body=mylist,encode="json")
 }
 
@@ -293,7 +298,7 @@ send_chart <- function(var_names, values){
   mid <- list(data=list(xs=mylist,columns=values))
   bottom <- list(axis=c(list(x=list(label=list(text="Iterations"))) , list(y=list(label=list(text="Losses")))))
   charts <- list("_charts"=c(top,mid,bottom))
-  url <- paste0(vanguard_settings[["fglab_url"]],"/api/v1/runs/", vanguard_settings[["run_id"]])
+  url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
   PUT(url,body=charts,encode="json")
 }
 
