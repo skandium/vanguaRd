@@ -1,8 +1,8 @@
-Package: vanguaRd
-Title: What the Package Does (one line, title case)
+Package: proekspert-lab
+Title: R Front-end for Lab, a Machine Learning Dashboard
 Version: 0.0.0.9000
-Authors@R: person("First", "Last", email = "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: person("Martin", "Lumiste", email = "martin.lumiste@proekspert.ee", role = c("aut", "cre"))
+Description: This package allows sending experiment results to Lab -- a machine learning dashboard -- and running new experiments from that dashboard.
 Depends: R (>= 3.2.0)
 License: What license is it under?
 Encoding: UTF-8
