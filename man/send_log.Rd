@@ -7,7 +7,9 @@
 send_log(msg, type = "stdout")
 }
 \arguments{
-\item{value}{The string content}
+\item{msg}{Log message}
+
+\item{type}{Type of output. Options: "stdout" or "stderr".}
 }
 \description{
 Sends arbitrary log over PUT request to FGLab.

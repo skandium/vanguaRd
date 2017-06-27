@@ -8,6 +8,8 @@ send_metric(metric, value)
 }
 \arguments{
 \item{metric}{The metric name}
+
+\item{value}{The metric value}
 }
 \description{
 Sends an arbitrary metric over PUT request to FGLab.

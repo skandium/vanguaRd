@@ -4,7 +4,7 @@ Version: 0.0.0.9000
 Authors@R: person("Martin", "Lumiste", email = "martin.lumiste@proekspert.ee", role = c("aut", "cre"))
 Description: This package allows sending experiment results to Lab -- a machine learning dashboard -- and running new experiments from that dashboard.
 Depends: R (>= 3.2.0)
-License: What license is it under?
+License: file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 6.0.1
@@ -12,4 +12,5 @@ Imports:
 	httr,
 	rjson,
 	argparser,
-	dotenv
+	dotenv,
+	ggplot2

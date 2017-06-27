@@ -6,6 +6,11 @@
 \usage{
 send_chart(var_names, values)
 }
+\arguments{
+\item{var_names}{?}
+
+\item{values}{?}
+}
 \description{
 Send an arbitrary number of time series graphs to be displayed in FGLab
 }

@@ -7,7 +7,9 @@
 send_explanation(explanation, filename = "explanation.png")
 }
 \arguments{
-\item{value}{The string content TODO}
+\item{explanation}{An explanation object returned by LIME.}
+
+\item{filename}{Filename for explanation in FGLab.}
 }
 \description{
 Sends LIME explanation to FGLab
