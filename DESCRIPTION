@@ -1,4 +1,4 @@
-Package: proekspert-lab
+Package: proekspertlab
 Title: R Front-end for Lab, a Machine Learning Dashboard
 Version: 0.0.0.9000
 Authors@R: person("Martin", "Lumiste", email = "martin.lumiste@proekspert.ee", role = c("aut", "cre"))
