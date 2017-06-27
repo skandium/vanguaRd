@@ -3,16 +3,9 @@
 #####################
 
 options(warn=-1) # Turn off warnings while loading libraries
-suppressMessages(library(httr))
-suppressMessages(library(rjson))
-suppressMessages(library(argparser))
-suppressMessages(library(dotenv))
-suppressMessages(library(ggplot2))
 options(warn=0)
 
-readRenviron("./.env")
-
-set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
+httr::set_config( httr::config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
 pkg_env <- new.env()
 
@@ -84,8 +77,8 @@ unlockBinding("experiment_setup", pkg_env)
                       experiment_setup=pkg_env$experiment_setup,
                       fgmachine_url=Sys.getenv("FGMACHINE_URL")
     )
-    response <- POST(url=url, body=json_data, encode="json")
-    experiment_id <- content(response)[["insertedIds"]][[1]]
+    response <- httr::POST(url=url, body=json_data, encode="json")
+    experiment_id <- httr::content(response)[["insertedIds"]][[1]]
 
 
   } else {
@@ -117,16 +110,16 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
   settings$run_locally <- run_locally
   settings$project_description <- ""
 
-  parser <- arg_parser(description="vanguard")
-  parser <- add_argument(parser, "--_id", help="id", type="character")
-  parser <- add_argument(parser, "--prerun", help="prerun", type="character", nargs=1)
+  parser <- argparser::arg_parser(description="vanguard")
+  parser <- argparser::add_argument(parser, "--_id", help="id", type="character")
+  parser <- argparser::add_argument(parser, "--prerun", help="prerun", type="character", nargs=1)
   for(key in names(parameters)) {
     value <- parameters[[key]]
-    parser <- add_argument(parser, paste0("--", key), help=key,
+    parser <- argparser::add_argument(parser, paste0("--", key), help=key,
                            type=typeof(value))
   }
 
-  args <- parse_args(parser)
+  args <- argparser::parse_args(parser)
   settings$args <- args
   settings$run_id <- args[["_id"]]
 
@@ -153,7 +146,7 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
                       options=.get_options_dict(),
                       experiment_setup=pkg_env$experiment_setup,
                       tags=settings$tags)
-    cat(toJSON(json_data))
+    cat(rjson::toJSON(json_data))
     .stopQuietly()
   } else if(is.na(settings$run_id) && !settings$run_locally) {
     print("Creating new experiment")
@@ -175,7 +168,7 @@ send_file <- function(file){
   myfile <- upload_file(file)
   mylist[['file']] <- myfile
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
-  PUT(url, body=mylist)
+  httr::PUT(url, body=mylist)
 }
 
 #' Sending files as strings
@@ -196,7 +189,7 @@ send_file <- function(file){
   myfile <- upload_file(file_path)
   mylist[['file']] <- myfile
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/file")
-  PUT(url, body=mylist)
+  httr::PUT(url, body=mylist)
 }
 
 
@@ -213,7 +206,7 @@ send_metric <- function(metric, value){
   mylist[[metric]] <- value
   json <- list("_scores" = mylist)
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  PUT(url,body=json,encode="json")
+  httr::PUT(url,body=json,encode="json")
 }
 
 #' Sending values
@@ -228,7 +221,7 @@ send_value <- function(name, value){
   mylist <- list()
   mylist[[name]] <- value
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  PUT(url,body=mylist,encode="json")
+  httr::PUT(url,body=mylist,encode="json")
 }
 
 #' Sending notes
@@ -241,14 +234,14 @@ send_value <- function(name, value){
 send_note <- function(value){
   json <- list("_notes" = value)
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  PUT(url,body=json,encode="json")
+  httr::PUT(url,body=json,encode="json")
 }
 
 #' Sending logs
 #'
 #' Sends arbitrary log over PUT request to FGLab.
 #' @param msg Log message
-#' @param type Type of output. Options: "stdout" or "stderr".
+#' @param type Type of outhttr::PUT. Options: "stdout" or "stderr".
 #'
 #' @export
 
@@ -257,7 +250,7 @@ send_log <- function(msg, type="stdout"){
   mylist[["type"]] <- type
   mylist[["msg"]] <- msg
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]], "/logs")
-  PUT(url,body=mylist,encode="json")
+  httr::PUT(url,body=mylist,encode="json")
 }
 
 #' Sending explanations
@@ -269,12 +262,12 @@ send_log <- function(msg, type="stdout"){
 #' @export
 
 send_explanation <- function(explanation, filename="explanation.png"){
-  g <- plot_features(explanation) # get ggplot object
+  g <- lime::plot_features(explanation) # get ggplot object
 
   # Save plot to file in a temporary directory and send like a normal file
   tdir <- tempdir()
   file_path <- paste0(tdir, "/", filename)
-  ggsave(file_path, g)
+  ggplot2::ggsave(file_path, g)
   send_file(file_path)
 }
 
@@ -299,6 +292,6 @@ send_chart <- function(var_names, values){
   bottom <- list(axis=c(list(x=list(label=list(text="Iterations"))) , list(y=list(label=list(text="Losses")))))
   charts <- list("_charts"=c(top,mid,bottom))
   url <- paste0(pkg_env$vanguard_settings[["fglab_url"]],"/api/v1/runs/", pkg_env$vanguard_settings[["run_id"]])
-  PUT(url,body=charts,encode="json")
+  httr::PUT(url,body=charts,encode="json")
 }
 
