@@ -7,6 +7,7 @@ suppressMessages(library(httr))
 suppressMessages(library(rjson))
 suppressMessages(library(argparser))
 suppressMessages(library(dotenv))
+suppressMessages(library(ggplot2))
 options(warn=0)
 
 readRenviron("./.env")
@@ -87,10 +88,21 @@ experiment_setup <- list()
   }
 }
 
-# ---- Set up connection with FGLab ----
+#' Connect to FGLab
+#'
+#' Initialises a connection to FGLab and creates a new experiment
+#' @param url The URL of FGLab. Default is likely http://localhost:5080.
+#' @param project_name Name of the project on FGLab.
+#' @param experiment_name Name of the experiment on FGLab. Must be unique within project.
+#' @param parameters A named list of parameters with their default values.
+#' @param filepath Path of the file to be run, relative to working directory.
+#' @param tags Vector of tags shown on FGLab.
+#' @param run_locally If TRUE, execute script locally without going through FGLab.
+#'
+#' @export
+
 vanguard_init <- function(url, project_name, experiment_name, parameters,
-                          filepath, tags=c(), run_locally=FALSE,
-                          project_description="-- Project description (legacy) --") {
+                          filepath, tags=c(), run_locally=FALSE) {
   settings <- list()
   settings$fglab_url <- url
   settings$project_name <- project_name
@@ -150,6 +162,8 @@ vanguard_init <- function(url, project_name, experiment_name, parameters,
 #'
 #' Sends an arbitrary file over PUT request to FGLab
 #' @param file The filepath
+#'
+#' @export
 
 send_file <- function(file){
   mylist <- list()
@@ -164,6 +178,8 @@ send_file <- function(file){
 #' Sends an arbitrary string over PUT request to FGLab into a file
 #' @param string The content of the file to be sent
 #' @param filename The filename shown on FGLab, including extension
+#'
+#' @export
 
 .send_file_as_string <- function(string, filename){
   # Save string to file in a temporary directory
@@ -183,7 +199,9 @@ send_file <- function(file){
 #'
 #' Sends an arbitrary metric over PUT request to FGLab.
 #' @param metric The metric name
-#' @value value The metric value
+#' @param value The metric value
+#'
+#' @export
 
 send_metric <- function(metric, value){
   mylist <- list()
@@ -196,6 +214,10 @@ send_metric <- function(metric, value){
 #' Sending values
 #'
 #' Sends an arbitrary value over PUT request to FGLab. Works similarly to send_metric but the results are displayed differently
+#' @param name Name
+#' @param value Value
+#'
+#' @export
 
 send_value <- function(name, value){
   mylist <- list()
@@ -208,6 +230,8 @@ send_value <- function(name, value){
 #'
 #' Sends arbitrary note over PUT request to FGLab.
 #' @param value The string content
+#'
+#' @export
 
 send_note <- function(value){
   json <- list("_notes" = value)
@@ -218,9 +242,12 @@ send_note <- function(value){
 #' Sending logs
 #'
 #' Sends arbitrary log over PUT request to FGLab.
-#' @param value The string content
+#' @param msg Log message
+#' @param type Type of output. Options: "stdout" or "stderr".
+#'
+#' @export
 
-send_log <- function(msg,type="stdout"){
+send_log <- function(msg, type="stdout"){
   mylist <- list()
   mylist[["type"]] <- type
   mylist[["msg"]] <- msg
@@ -231,10 +258,12 @@ send_log <- function(msg,type="stdout"){
 #' Sending explanations
 #'
 #' Sends LIME explanation to FGLab
-#' @param value The string content TODO
+#' @param explanation An explanation object returned by LIME.
+#' @param filename Filename for explanation in FGLab.
+#'
+#' @export
 
 send_explanation <- function(explanation, filename="explanation.png"){
-  library(ggplot2)
   g <- plot_features(explanation) # get ggplot object
 
   # Save plot to file in a temporary directory and send like a normal file
@@ -250,7 +279,10 @@ send_explanation <- function(explanation, filename="explanation.png"){
 #' Generating time series charts
 #'
 #' Send an arbitrary number of time series graphs to be displayed in FGLab
-
+#' @param var_names ?
+#' @param values ?
+#'
+#' @export
 
 send_chart <- function(var_names, values){
   top <- list(columnNames=as.list(var_names))
