@@ -3,11 +3,13 @@
 #####################
 
 options(warn=-1) # Turn off warnings while loading libraries
-suppressMessages(require(httr))
-suppressMessages(require(rjson))
-suppressMessages(require(argparser))
-suppressMessages(require(dotenv))
+suppressMessages(library(httr))
+suppressMessages(library(rjson))
+suppressMessages(library(argparser))
+suppressMessages(library(dotenv))
 options(warn=0)
+
+readRenviron("./.env")
 
 set_config( config( ssl_verifypeer = 0, ssl_verifyhost=0 ) )
 
@@ -64,6 +66,7 @@ experiment_setup <- list()
 .create_experiment <- function() {
   url <- paste0(vanguard_settings$fglab_url,"/api/v1/experiments/create")
   fgmachine_dir <- Sys.getenv("FGMACHINE_DIR")
+  print(fgmachine_dir)
   experiments_json_loc <- paste0(fgmachine_dir, "/experiments.json")
 
   if(file.exists(experiments_json_loc)) {
@@ -87,7 +90,7 @@ experiment_setup <- list()
 # ---- Set up connection with FGLab ----
 vanguard_init <- function(url, project_name, experiment_name, parameters,
                           filepath, tags=c(), run_locally=FALSE,
-                 project_description="-- Project description (legacy) --") {
+                          project_description="-- Project description (legacy) --") {
   settings <- list()
   settings$fglab_url <- url
   settings$project_name <- project_name
